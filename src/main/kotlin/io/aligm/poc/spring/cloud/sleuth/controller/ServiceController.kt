@@ -21,6 +21,13 @@ class ServiceController(val newThreadTracingService: NewThreadTracingService) {
         return "Check application logs"
     }
 
+    @GetMapping("/executor-thread-logs-tracing")
+    fun executorThreadLogsTracing(): String {
+        logger.info("Executor thread logs tracing requested")
+        newThreadTracingService.executorThreadPrintLogs()
+        return "Check application logs"
+    }
+
     companion object {
         private val logger = LoggerFactory.getLogger(ServiceController::class.java)
     }
