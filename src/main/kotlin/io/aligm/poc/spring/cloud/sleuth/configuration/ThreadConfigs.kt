@@ -5,13 +5,20 @@ import org.springframework.cloud.sleuth.instrument.async.LazyTraceExecutor
 import org.springframework.cloud.sleuth.instrument.async.TraceableExecutorService
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.scheduling.annotation.AsyncConfigurerSupport
+import org.springframework.scheduling.annotation.EnableAsync
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
 import java.util.concurrent.Executor
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 @Configuration
-class ThreadConfigs {
+@EnableAsync
+class ThreadConfigs(val beanFactory: BeanFactory): AsyncConfigurerSupport() {
+
+    override fun getAsyncExecutor(): Executor {
+        return executor(beanFactory)
+    }
 
     @Bean
     fun executorService(beanFactory: BeanFactory): ExecutorService =
@@ -26,4 +33,5 @@ class ThreadConfigs {
         }
         return LazyTraceExecutor(beanFactory, threadPoolTaskExecutor)
     }
+
 }

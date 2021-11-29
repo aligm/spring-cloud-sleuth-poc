@@ -28,6 +28,13 @@ class ServiceController(val newThreadTracingService: NewThreadTracingService) {
         return "Check application logs"
     }
 
+    @GetMapping("/spring-async-thread-logs-tracing")
+    fun springAsyncThreadLogsTracing(): String {
+        logger.info("Spring async thread logs tracing requested")
+        newThreadTracingService.springAsyncThreadPrintLogs()
+        return "Check application logs"
+    }
+
     companion object {
         private val logger = LoggerFactory.getLogger(ServiceController::class.java)
     }
