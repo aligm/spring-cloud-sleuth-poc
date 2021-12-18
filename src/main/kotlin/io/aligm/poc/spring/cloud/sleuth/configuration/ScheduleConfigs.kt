@@ -1,33 +1,54 @@
 package io.aligm.poc.spring.cloud.sleuth.configuration
 
 import io.aligm.poc.spring.cloud.sleuth.scheduler.TracedLoggingJob
+import org.quartz.JobBuilder
 import org.quartz.JobDetail
+import org.quartz.ScheduleBuilder
+import org.quartz.Scheduler
+import org.quartz.SimpleScheduleBuilder
+import org.quartz.SimpleTrigger
+import org.quartz.Trigger
+import org.quartz.TriggerBuilder
+import org.quartz.impl.StdSchedulerFactory
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.scheduling.annotation.EnableScheduling
-import org.springframework.scheduling.quartz.JobDetailFactoryBean
-import org.springframework.scheduling.quartz.SimpleTriggerFactoryBean
 
 @Configuration
 @EnableScheduling
 class ScheduleConfigs {
 
     @Bean
-    fun jobDetail(): JobDetailFactoryBean = JobDetailFactoryBean().apply {
-        setJobClass(TracedLoggingJob::class.java)
-        setDescription("Launching traced logging job...")
-        setDurability(true)
-    }
+    fun jobDetail(): JobDetail =
+        JobBuilder.newJob().apply {
+            ofType(TracedLoggingJob::class.java)
+            withIdentity("Logging job")
+            withDescription("Launching traced logging job...")
+            storeDurably()
+        }.build()
 
     @Bean
-    fun jobTrigger(jobDetail: JobDetail): SimpleTriggerFactoryBean = SimpleTriggerFactoryBean().apply {
-        setJobDetail(jobDetail)
-        setRepeatInterval(FIVE_SECONDS)
-        setRepeatCount(3)
-    }
+    fun jobScheduleBuilder(): ScheduleBuilder<SimpleTrigger> =
+        SimpleScheduleBuilder.simpleSchedule().apply {
+            withRepeatCount(3)
+            withIntervalInSeconds(5)
+        }
 
-    companion object {
-        private const val FIVE_SECONDS = 5000L
-    }
+    @Bean
+    fun jobTrigger(jobDetail: JobDetail, jobScheduleBuilder: ScheduleBuilder<SimpleTrigger>): Trigger =
+        TriggerBuilder.newTrigger().apply {
+            withIdentity("Logging job trigger")
+            forJob(jobDetail)
+            withSchedule(jobScheduleBuilder)
+            startNow()
+        }.build()
+
+    @Bean
+    fun scheduler(jobDetail: JobDetail, trigger: Trigger): Scheduler =
+        StdSchedulerFactory().scheduler.apply {
+            addJob(jobDetail, true)
+            scheduleJob(trigger)
+            start()
+        }
 
 }
