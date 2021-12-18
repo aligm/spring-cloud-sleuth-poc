@@ -8,6 +8,7 @@ Simple springframework service checking Spring cloud sleuth logs tracing (proof 
 * Spring Async method calls logs tracing
 * Scheduled jobs logs tracing (works by default)
 * ApplicationEvents processing thread logs tracing
+* Quartz (spring-boot-starter-quartz) jobs logs tracing (works by default)
 
 TBD
 * Quartz jobs logs tracing
